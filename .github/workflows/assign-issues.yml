@@ -1,0 +1,39 @@
+name: Assign Issues
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Issue Template
+        id: check_template
+        run: |
+          issue_template="${{ github.event.issue.body }}"
+          if [[ $issue_template == *"bug_report.md"* ]]; then
+            echo "Issue is a Bug Report."
+          elif [[ $issue_template == *"feature_request.md"* ]]; then
+            echo "Issue is a Feature Request."
+          else
+            echo "Unknown Issue Template."
+            exit 1
+          fi
+
+      - name: Assign to Team or User
+        if: steps.check_template.outcome == 'success'
+        run: |
+          issue_type="${{ steps.check_template.outputs }}"
+          if [[ $issue_type == *"Bug Report"* ]]; then
+            echo "Assigning to the Bug Fixers team."
+            # Use GitHub API to assign the issue to a team or user.
+            # Example: `curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -d '{"assignees": ["username"]}' "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/assignees"`
+          elif [[ $issue_type == *"Feature Request"* ]]; then
+            echo "Assigning to the Feature Team."
+            # Use GitHub API to assign the issue to a team or user.
+          else
+            echo "Issue not assigned."
+          fi
